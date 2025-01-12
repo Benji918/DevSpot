@@ -8,7 +8,7 @@ namespace DevSpot.Models
     {
         [Key]
         public int Id { get; set; }
-        [Required]
+        [Required(ErrorMessage ="Title is Required")]
         public string Title { get; set; }
         [Required]
         public string Description { get; set; }
@@ -16,7 +16,7 @@ namespace DevSpot.Models
         public string Company { get; set; }
         [Required]
         public string Location { get; set; }
-        [Required]
+        
         public DateTime Posted_date { get; set; } = DateTime.UtcNow;
 
         public bool IsApproved { get; set; } = false;
@@ -25,6 +25,7 @@ namespace DevSpot.Models
         public string UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
+        [NotMapped]
         public IdentityUser User { get; set; }  
     }
 }

@@ -41,7 +41,7 @@ namespace DevSpot.Repositories
             return await _context.JobPostings.ToListAsync();
         }
 
-        public async Task<JobPosting> GetById(int id)
+        public async Task<JobPosting> GetByIdAsync(int id)
         {
             var jobposting  = await _context.JobPostings.FindAsync(id);
 

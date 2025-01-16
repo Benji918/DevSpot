@@ -8,7 +8,7 @@ namespace DevSpot.Repositories
     public class JobPostingRepository : IRepository<JobPosting>
     {
         private readonly ApplicationDbContext _context;
-
+        
         public JobPostingRepository(ApplicationDbContext context)
         {
             _context = context;

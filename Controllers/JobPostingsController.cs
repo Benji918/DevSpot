@@ -4,9 +4,13 @@ using DevSpot.Models;
 using Microsoft.AspNetCore.Identity;
 using NuGet.Protocol.Core.Types;
 using DevSpot.ViewModel;
+using Microsoft.AspNetCore.Authorization;
+using NuGet.Protocol.Plugins;
+using DevSpot.Constants;
 
 namespace DevSpot.Controllers
 {
+    [Authorize]
     public class JobPostingsController : Controller
     {
         private readonly IRepository<JobPosting> _repository;
@@ -17,19 +21,34 @@ namespace DevSpot.Controllers
             _repository = repository;
             _userManager = userManager;
         }
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            IEnumerable<JobPosting> jobpostings = await _repository.GetAllAsync();
+            if (User.IsInRole(Roles.EMPLOYER))
+            {
+                IEnumerable<JobPosting> allJobpostings = (await _repository.GetAllAsync()).OrderByDescending(j => j.Posted_date);
+
+                var userId = _userManager.GetUserId(User);
+
+                var filtered_jobposting = allJobpostings.Where(jp => jp.UserId == userId);
+
+                return View(filtered_jobposting);
+
+            }
+
+            IEnumerable<JobPosting> jobpostings = (await _repository.GetAllAsync()).OrderByDescending(j => j.Posted_date);
             return View(jobpostings);
         }
 
+        [Authorize(Roles ="Admin, Employer")]
         public IActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        //[ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin, Employer")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(JobPosting jobposting)
         {
             var currentUserId = _userManager.GetUserId(User);
@@ -75,6 +94,30 @@ namespace DevSpot.Controllers
             
             // If ModelState is invalid, redisplay the form with error messages
             return View(jobposting);
+        }
+
+
+        [HttpDelete]
+        [Authorize(Roles = "Admin, Employer")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var jobposting = await _repository.GetByIdAsync(id);
+
+            if(jobposting == null)
+            {
+                return NotFound("Specific Jobposting not found");
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            if(User.IsInRole(Roles.ADMIN) == false && jobposting.UserId != userId)
+            {
+                return Forbid("This action is forbidden!");
+            }
+
+            await _repository.DeleteAsync(id);
+
+            return Ok();
         }
     }
 }

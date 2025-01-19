@@ -15,7 +15,7 @@ namespace DevSpot
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DB"))
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DB"))
                 .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
             });
 
@@ -41,7 +41,7 @@ namespace DevSpot
                 app.UseHsts();
             }
 
-            using(var scope = app.Services.CreateScope())
+            using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
 
@@ -50,7 +50,7 @@ namespace DevSpot
 
             }
 
-            
+
 
 
             app.UseHttpsRedirection();
